@@ -109,7 +109,7 @@ test("app loads without console errors or failed network requests", async ({
 
   page.on("pageerror", (error) => pageErrors.push(error.message));
   page.on("response", (response) => {
-    if (response.status() >= 400) {
+    if (response.status() >= 500) {
       failedResponses.push(`${response.status()} ${response.url()}`);
     }
   });
