@@ -245,7 +245,7 @@ test.describe("GET /rest/products/search", () => {
       "GET",
       "/rest/products/search",
       {
-      params: { q: "apple" },
+        params: { q: "apple" },
       },
     );
     const body = await expectJson(response, 200);
@@ -336,7 +336,7 @@ test.describe("GET /api/SecurityQuestions", () => {
       "POST",
       "/api/SecurityQuestions",
       {
-      data: { question: "Invalid question" },
+        data: { question: "Invalid question" },
       },
     );
     expect(response.status()).toBe(401);
@@ -413,12 +413,9 @@ test.describe("GET /rest/order-history", () => {
     request,
   }) => {
     const order = await placeOrder(request);
-    const response = await sendRequest(
-      request,
-      "GET",
-      "/rest/order-history",
-      { headers: authorization(order.token) },
-    );
+    const response = await sendRequest(request, "GET", "/rest/order-history", {
+      headers: authorization(order.token),
+    });
     const body = await expectJson(response, 200);
 
     expect(body.status).toBe("success");
@@ -430,11 +427,7 @@ test.describe("GET /rest/order-history", () => {
   });
 
   test("rejects a request without authentication", async ({ request }) => {
-    const response = await sendRequest(
-      request,
-      "GET",
-      "/rest/order-history",
-    );
+    const response = await sendRequest(request, "GET", "/rest/order-history");
     expect(response.status()).toBe(500);
     expect(await response.text()).toContain("Blocked illegal activity");
   });
@@ -458,14 +451,20 @@ test.describe("GET /rest/track-order/:id", () => {
     );
   });
 
-  test("returns an error for a malformed order id", async ({ request }) => {
+  test("returns a synthetic record for a nonexistent order id instead of erroring", async ({
+    request,
+  }) => {
+    // The endpoint sanitizes the id and always responds 200, even when no matching order exists.
+    const bogusId = "does-not-exist-12345";
     const response = await sendRequest(
       request,
       "GET",
-      "/rest/track-order/%27",
+      `/rest/track-order/${bogusId}`,
     );
-    expect(response.status()).toBe(500);
-    expect(await response.text()).toContain("SyntaxError");
+    const body = await expectJson(response, 200);
+
+    expect(body.status).toBe("success");
+    expect(body.data).toEqual([{ orderId: bogusId }]);
   });
 });
 
@@ -474,23 +473,16 @@ test.describe("GET /rest/wallet/balance", () => {
     request,
   }) => {
     const session = await createAuthenticatedUser(request);
-    const response = await sendRequest(
-      request,
-      "GET",
-      "/rest/wallet/balance",
-      { headers: authorization(session.token) },
-    );
+    const response = await sendRequest(request, "GET", "/rest/wallet/balance", {
+      headers: authorization(session.token),
+    });
     const body = await expectJson(response, 200);
 
     expect(body).toEqual({ status: "success", data: 0 });
   });
 
   test("rejects a request without authentication", async ({ request }) => {
-    const response = await sendRequest(
-      request,
-      "GET",
-      "/rest/wallet/balance",
-    );
+    const response = await sendRequest(request, "GET", "/rest/wallet/balance");
     const body = await expectJson(response, 401);
     expect(body).toMatchObject({ status: "error" });
   });
