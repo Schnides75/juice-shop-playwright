@@ -110,8 +110,12 @@ test("opening the nav and clicking Photo Wall opens the Photo Wall page", async 
 test("opening the nav and clicking Score Board opens the Score Board page", async ({
   page,
 }) => {
-  await page.goto("/");
+  // A fresh Juice Shop hides this link until the Score Board challenge is discovered.
+  await page.goto("/#/score-board");
   await dismissBanners(page);
+  await expect(page.locator(".score-row")).toBeVisible();
+
+  await page.goto("/");
 
   await page.getByRole("button", { name: "Open Sidenav" }).click();
   await page.getByRole("link", { name: "Open score-board" }).click();
