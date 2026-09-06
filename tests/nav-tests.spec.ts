@@ -33,6 +33,24 @@ test("side menu expands when opened and collapses when clicking outside", async 
   await expect(sidenavHeading).toBeHidden();
 });
 
+test("expanded nav displays the application name and current version at the bottom", async ({
+  page,
+  request,
+}) => {
+  const versionResponse = await request.get("/rest/admin/application-version");
+  expect(versionResponse.ok()).toBeTruthy();
+  const { version } = (await versionResponse.json()) as { version: string };
+
+  await page.goto("/");
+  await dismissBanners(page);
+  await page.getByRole("button", { name: "Open Sidenav" }).click();
+
+  const navFooter = page.locator("mat-sidenav .appVersion");
+  await expect(navFooter).toBeVisible();
+  await expect(navFooter.locator(".app-name")).toHaveText("OWASP Juice Shop");
+  await expect(navFooter.locator(".app-version")).toHaveText(`v${version}`);
+});
+
 test("opening the nav and clicking Customer Feedback opens the Customer Feedback dialog", async ({
   page,
 }) => {
