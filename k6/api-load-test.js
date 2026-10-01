@@ -1,10 +1,27 @@
 import { check, sleep } from "k6";
 import http from "k6/http";
+import { Counter } from "k6/metrics";
 import { config } from "./config/local-config.js";
 
+const productRequests = new Counter("product_requests");
+const loginRequests = new Counter("login_requests");
+
 export const options = {
-  vus: 10,
-  duration: "10s",
+  scenarios: {
+    browse_products: {
+      executor: "constant-vus",
+      exec: "browseProducts",
+      vus: 20,
+      duration: "30s",
+    },
+
+    login_users: {
+      executor: "constant-vus",
+      exec: "loginUser",
+      vus: 5,
+      duration: "30s",
+    },
+  },
 
   thresholds: {
     "http_req_duration{endpoint:products}": ["p(95)<200"],
@@ -13,19 +30,25 @@ export const options = {
   },
 };
 
-export default function () {
+export function browseProducts() {
   const response = http.get(`${config.baseUrl}/api/Products`, {
     tags: { endpoint: "products" },
   });
+  productRequests.add(1);
 
   check(response, {
     "status is 200": (r) => r.status === 200,
   });
 
+  sleep(1);
+}
+
+export function loginUser() {
   const loginPayload = JSON.stringify({
     email: config.testUser.email,
     password: config.testUser.password,
   });
+  loginRequests.add(1);
 
   const loginParams = {
     headers: {
