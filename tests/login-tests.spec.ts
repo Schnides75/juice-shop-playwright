@@ -1,8 +1,5 @@
 import { expect, test } from "@playwright/test";
-
-test("Account > Login displays the Login page and its controls", async ({
-  page,
-}) => {
+test.beforeEach(async ({ page }) => {
   await page.goto("/");
 
   await page.getByRole("button", { name: "Close Welcome Banner" }).click();
@@ -13,7 +10,10 @@ test("Account > Login displays the Login page and its controls", async ({
 
   await page.getByRole("button", { name: "Show/hide account menu" }).click();
   await page.getByRole("menuitem", { name: "Go to login page" }).click();
-
+});
+test("Account > Login displays the Login page and its controls", async ({
+  page,
+}) => {
   await expect(
     page.getByRole("heading", { name: "Login", exact: true }),
   ).toBeVisible();
@@ -40,5 +40,31 @@ test("Account > Login displays the Login page and its controls", async ({
   ).toBeVisible();
   await expect(
     page.getByRole("link", { name: "Not yet a customer?", exact: true }),
+  ).toBeVisible();
+});
+
+test("Login > Not yet a customer? directs to User Registration page", async ({
+  page,
+}) => {
+  await page
+    .getByRole("link", { name: "Not yet a customer?", exact: true })
+    .click();
+
+  await expect(page).toHaveURL(/\/register$/);
+  await expect(
+    page.getByRole("heading", { name: "User Registration" }),
+  ).toBeVisible();
+});
+
+test("Login > Forgot your password? directs to Password Reset page", async ({
+  page,
+}) => {
+  await page
+    .getByRole("link", { name: "Forgot your password?", exact: true })
+    .click();
+
+  await expect(page).toHaveURL(/\/forgot-password$/);
+  await expect(
+    page.getByRole("heading", { name: "Forgot Password" }),
   ).toBeVisible();
 });
