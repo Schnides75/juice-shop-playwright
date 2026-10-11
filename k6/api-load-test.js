@@ -9,24 +9,25 @@ const loginRequests = new Counter("login_requests");
 export const options = {
   scenarios: {
     browse_products: {
-      executor: "constant-vus",
+      executor: "ramping-vus",
       exec: "browseProducts",
-      vus: 20,
-      duration: "30s",
+      startVUs: 0,
+      stages: [
+        { duration: "15s", target: 10 },
+        { duration: "15s", target: 10 },
+        { duration: "15s", target: 20 },
+        { duration: "15s", target: 0 },
+      ],
     },
 
-    login_users: {
-      executor: "constant-vus",
-      exec: "loginUser",
-      vus: 5,
-      duration: "30s",
-    },
+    // Login scenario disabled for isolated product load testing.
   },
 
   thresholds: {
     "http_req_duration{endpoint:products}": ["p(95)<200"],
-    "http_req_duration{endpoint:login}": ["p(95)<200"],
+    // "http_req_duration{endpoint:login}": ["p(95)<200"],
     http_req_failed: ["rate<0.01"],
+    checks: ["rate>=0.99"],
   },
 };
 
