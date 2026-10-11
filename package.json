@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "test:pw": "playwright test",
+    "test:k6": "k6 run k6/api-load-test.js",
+    "test:all": "npm run test:pw && npm run test:k6"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
